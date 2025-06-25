@@ -32,7 +32,7 @@ pub fn instantiate(
     contract.instantiate(deps, env, info, msg)
 }
 
-/// Entry point for queries 
+/// Entry point for queries
 #[entry_point]
 pub fn query(
     deps: Deps,
@@ -43,7 +43,7 @@ pub fn query(
     contract.query(deps, env, msg)
 }
 
-/// Entry point for execution 
+/// Entry point for execution
 #[entry_point]
 pub fn execute(
     deps: DepsMut,
@@ -106,7 +106,7 @@ pub fn execute(
                 ));
             }
 
-            // Load the NFT 
+            // Load the NFT
             let token = contract.tokens.load(deps.storage, &token_id)?;
 
             // Remove linked hashed
@@ -123,7 +123,7 @@ pub fn execute(
             )
         }
 
-        // Call other messages of cw721-base 
+        // Call other messages of cw721-base
         other => contract.execute(deps, env, info, other),
     }
 }
