@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     entry_point, DepsMut, Deps, Env, MessageInfo, Response, Empty,
-    StdResult, Binary, StdError, Addr,
+    StdResult, Binary, StdError
 };
 use cw721_base::{InstantiateMsg, Cw721Contract, ContractError};
 use crate::extension::HashedBatchExtension;

@@ -1,5 +1,4 @@
-use cosmwasm_std::Addr;
-use cw_storage_plus::{Item, Map};
+use cw_storage_plus::{ Map};
 
 
 /// Track used hashes for uniqueness
