@@ -1,11 +1,11 @@
 use cosmwasm_std::{
     entry_point, DepsMut, Deps, Env, MessageInfo, Response, Empty,
-    StdResult, Binary, StdError
+    StdResult, Binary
 };
 use cw721_base::{InstantiateMsg, Cw721Contract, ContractError};
 use crate::extension::HashedBatchExtension;
-use crate::helpers::*;
-use crate::state::USED_HASHES;
+
+use crate::execute::*;
 
 const CONTRACT_NAME: &str = "crates.io:cw721-hashed";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -52,81 +52,19 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     let contract = CustomCw721Contract::default();
-
-    // Retrieve contract owner (the minter)
-    let expected_owner = get_owner(deps.as_ref())?;
-
+   
     match msg {
         ExecuteMsg::Mint {
             token_id,
             owner,
             token_uri,
             extension,
-        } => {
-            //  Only the contract owner can mint
-            if info.sender != expected_owner {
-                return Err(ContractError::Std(
-                    StdError::generic_err(format!("Only owner: {} can mint|burn", expected_owner)),
-                ));
-            }
+        } =>  execute_mint(deps, env, info, token_id, owner, token_uri, extension),
 
-            // Ensure each hash is unique in the contract
-            for hash in &extension.hashes {
-                if USED_HASHES.has(deps.storage, hash) {
-                    return Err(ContractError::Std(
-                        StdError::generic_err(format!("Hash {} already used", hash)),
-                    ));
-                }
-            }
+        ExecuteMsg::Burn { token_id } =>  execute_burn(deps, env, info, token_id),
 
-            //  Save all hashes as used
-            for hash in &extension.hashes {
-                USED_HASHES.save(deps.storage, hash, &true)?;
-            }
-
-            // Call standard  mint logic
-            contract.execute(
-                deps,
-                env,
-                info,
-                ExecuteMsg::Mint {
-                    token_id,
-                    owner,
-                    token_uri,
-                    extension,
-                },
-            )
-        }
-
-        ExecuteMsg::Burn { token_id } => {
-            //  Only the contract owner can burn
-            if info.sender != expected_owner {
-                return Err(ContractError::Std(
-                    StdError::generic_err(format!("Only owner: {} can mint|burn", expected_owner)),
-                ));
-            }
-
-            // Load the NFT
-            let token = contract.tokens.load(deps.storage, &token_id)?;
-
-            // Remove linked hashed
-            for hash in &token.extension.hashes {
-                USED_HASHES.remove(deps.storage, hash);
-            }
-
-            // Call standard CW721 burn logic
-            contract.execute(
-                deps,
-                env,
-                info,
-                ExecuteMsg::Burn { token_id },
-            )
-        }
-
-        // Call other messages of cw721-base
         other => contract.execute(deps, env, info, other),
     }
 }
-
 
 
