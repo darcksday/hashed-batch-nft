@@ -52,7 +52,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     let contract = CustomCw721Contract::default();
-   
+
     match msg {
         ExecuteMsg::Mint {
             token_id,
