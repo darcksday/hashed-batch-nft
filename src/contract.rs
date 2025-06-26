@@ -62,7 +62,7 @@ pub fn execute(
         } =>  execute_mint(deps, env, info, token_id, owner, token_uri, extension),
 
         ExecuteMsg::Burn { token_id } =>  execute_burn(deps, env, info, token_id),
-
+        // Other Cw721 messages
         other => contract.execute(deps, env, info, other),
     }
 }
