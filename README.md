@@ -66,7 +66,7 @@ cargo test
 
 ```sh
 wasmd tx wasm instantiate <CODE_ID> '{"name":"HashedBatchNFT","symbol":"HASH","minter":"<your-address>"}' \
-  --label "hashed-nft" --from <wallet> --amount 2stake
+  --label "hashed-nft" --from <wallet> 
 ```
 
 ---

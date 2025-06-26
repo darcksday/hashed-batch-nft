@@ -1,0 +1,73 @@
+name: CI & Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [created]
+
+jobs:
+  test-and-build:
+    name: 🌟 Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 👋 Checkout repo
+        uses: actions/checkout@v3
+
+      - name: 🚀 Set up Rust
+        uses: actions/setup-rust@v1
+        with:
+          rust-version: stable
+
+      - name: 🛠 Add wasm target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: ✅ Run unit tests
+        run: cargo unit-test
+
+      - name: ✨ Build WASM
+        run: cargo wasm
+
+      - name: 🔍 Generate schema
+        run: cargo schema
+
+  release:
+    name: 🌟 Release WASM
+    needs: test-and-build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📄 Checkout sources
+        uses: actions/checkout@v3
+
+      - name: 🚀 Set up Rust
+        uses: actions/setup-rust@v1
+        with:
+          rust-version: stable
+
+      - name: 🛠 Add wasm target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: ✨ Optimize WASM (docker)
+        run: |
+          docker run --rm -v "$PWD":/code \
+            --mount type=volume,source="$(basename "$PWD")_cache",target=/target \
+            --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+            cosmwasm/workspace-optimizer:0.16.0
+
+      - name: 🌀 Get release ID
+        id: get_release
+        uses: bruceadams/get-release@v1.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: 📥 Upload optimized WASM
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./artifacts/*.wasm
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
