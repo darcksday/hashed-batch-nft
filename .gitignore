@@ -14,4 +14,3 @@
 # IDEs
 *.iml
 .idea
-Cargo.lock
